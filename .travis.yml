@@ -14,7 +14,7 @@ before_install:
 #    - stage: Test
 #      script: ./mvnw clean test
       
- script:
+script:
   - mvn test
   - mvn clean package
   # Create Docker image for our app and push it to Dockerhub repository
