@@ -17,7 +17,7 @@ before_install:
 script:
   - mvn test
   - mvn clean package
-  # Create Docker image for our app and push it to Dockerhub repository
+  # Create Docker image for our app and push to Dockerhub repository
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build -t travis-demo .
   - docker images
