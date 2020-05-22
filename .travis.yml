@@ -23,6 +23,7 @@ script:
   - docker images
   - docker tag travis-demo mukesh9092/travis-demo
   - docker push mukesh9092/travis-demo
+  - mvn deploy --settings settings.xml
 
 notification:
   email: mthakur@mdsol.com
