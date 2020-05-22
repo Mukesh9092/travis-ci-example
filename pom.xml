@@ -44,4 +44,15 @@
 		</plugins>
 	</build>
 
+  <distributionManagement>
+    <repository>
+        <id>2.1.7.RELEASE</id>
+        <url>http://18.218.80.151:8081/repository/travis-example/</url>
+    </repository>
+    <snapshotRepository>
+        <id>0.0.1-SNAPSHOT</id>
+        <url>http://18.218.80.151:8081/repository/travis-example/</url>
+    </snapshotRepository>
+ </distributionManagement>
+		
 </project>

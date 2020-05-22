@@ -5,13 +5,13 @@
           
     <servers>
         <server>
-            <id>nexus-releases</id>
+            <id>2.1.7.RELEASE</id>
             <username>admin</username>
             <password>admin123</password>
         </server>
                 
         <server>
-            <id>nexus-snapshots</id>
+            <id>0.0.1-SNAPSHOT</id>
             <username>admin</username>
             <password>admin123</password>
         </server>
