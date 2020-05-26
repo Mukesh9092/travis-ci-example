@@ -16,10 +16,10 @@ spec:
     spec:
       containers:
       - name: travis-demo
-        image: mukesh9092/travis-demo:latest
+        image: index.docker.io/mukesh9092/travis-demo:latest
         imagePullPolicy: Always
         command: [ "echo", "SUCCESS" ]
       imagePullSecrets:
-      - name: Mukesh90926
+      - name: myregistrykey
       ports:
       - containerPort: 80
