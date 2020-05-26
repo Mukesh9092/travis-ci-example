@@ -42,6 +42,8 @@ script:
   - mvn clean package
   # Create Docker image for our app and push it to Dockerhub repository
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker images
+  - docker tag travis-demo mukesh9092/travis-demo
   # Following is just to demo that the kubernetes cluster works.
   - kubectl cluster-info
 # Wait for kube-dns to be ready.
