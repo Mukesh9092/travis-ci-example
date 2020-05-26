@@ -15,11 +15,11 @@ spec:
         app: travis
     spec:
       containers:
-      - name: travis
+      - name: travis-demo
         image: index.docker.io/mukesh9092/travis-demo:latest
         imagePullPolicy: Always
         command: [ "echo", "SUCCESS" ]
       imagePullSecrets:
-       - name: Mukesh90926
+      - name: Mukesh90926
         ports:
         - containerPort: 80
