@@ -20,6 +20,6 @@ spec:
         imagePullPolicy: Always
         command: [ "echo", "SUCCESS" ]
         ports:
-        - containerport: 80
+        - containerPort: 80
       imagePullSecrets:
       - name: myregistrykey
