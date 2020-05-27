@@ -19,7 +19,7 @@ spec:
         image: index.docker.io/mukesh9092/travis-demo:latest
         imagePullPolicy: Always
         command: [ "echo", "SUCCESS" ]
+        ports:
+        - containerport: 80
       imagePullSecrets:
       - name: myregistrykey
-      ports:
-      - containerPort: 80
