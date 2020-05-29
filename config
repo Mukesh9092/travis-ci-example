@@ -1,0 +1,42 @@
+sudo: required
+dist: xenial
+language: java
+jdk:
+  - openjdk8
+
+script: ./mvnw clean install
+services:
+  - docker
+before_install:
+  - docker pull openjdk:8-jdk-alpine
+
+install:
+  - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.7/bin/linux/amd64/kubectl
+  - chmod +x ./kubectl
+  - sudo mv ./kubectl /usr/local/bin/kubectl
+
+script:
+  - mvn test
+  - mvn clean package
+  # Create Docker image for our app and push it to Dockerhub repository
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker images
+  - docker tag travis-demo mukesh9092/travis-demo
+  - mkdir ${HOME}/.kube
+  - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+  - kubectl create secret docker-registry myregistrykey --docker-server=$DOCKER_REGISTRY_SERVER --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL
+  - kubectl create -f deployment.yml 
+  - docker push mukesh9092/travis-demo
+  - mvn deploy --settings settings.xml
+  - kubectl cluster-info  
+  # Following is just to demo that the kubernetes cluster works.
+
+# Wait for kube-dns to be ready.
+#  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
+# deployment on Kubernetes.
+# Make sure created pod is scheduled and running.
+#  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-demo -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
+
+
+notification:
+  email: mthakur@mdsol.com
