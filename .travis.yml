@@ -4,39 +4,17 @@ language: java
 jdk:
   - openjdk8
 
-env:
-  global:
-    - CHANGE_MINIKUBE_NONE_USER=true
-    - MINIKUBE_WANTUPDATENOTIFICATION=false
-    - MINIKUBE_WANTREPORTERRORPROMPT=false
-    - MINIKUBE_HOME=$HOME
-    - CHANGE_MINIKUBE_NONE_USER=true
-    - KUBECONFIG=$HOME/.kube/config
-
 script: ./mvnw clean install
 services:
   - docker
 before_install:
   - docker pull openjdk:8-jdk-alpine
-  - sudo apt-get -qq -y install conntrack
 
-before_script:
-# Download kubectl, which is a requirement for using minikube.
-  - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.18.1/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-# Download minikube.
-  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.8.1/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-  - mkdir -p $HOME/.kube $HOME/.minikube
-  - touch $KUBECONFIG
-  - sudo minikube start --profile=minikube --vm-driver=none --kubernetes-version=v1.18.1
-  - minikube update-context --profile=minikube
-  - "sudo chown -R travis: /home/travis/.minikube/"
-  - eval "$(minikube docker-env --profile=minikube)" && export DOCKER_CLI='docker'
+install:
+  - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.7/bin/linux/amd64/kubectl
+  - chmod +x ./kubectl
+  - sudo mv ./kubectl /usr/local/bin/kubectl
 
-#jobs:
-#  include:
-#    - stage: Test
-#      script: ./mvnw clean test
-      
 script:
   - mvn test
   - mvn clean package
@@ -44,17 +22,21 @@ script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker images
   - docker tag travis-demo mukesh9092/travis-demo
-  # Following is just to demo that the kubernetes cluster works.
-  - kubectl cluster-info
-# Wait for kube-dns to be ready.
-  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
-# Create example Redis deployment on Kubernetes.
+  - mkdir ${HOME}/.kube
+  - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
   - kubectl create secret docker-registry myregistrykey --docker-server=$DOCKER_REGISTRY_SERVER --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL
-  - kubectl create -f deployment.yml
-# Make sure created pod is scheduled and running.
-  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-demo -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
+  - kubectl apply -f deployment.yml 
   - docker push mukesh9092/travis-demo
   - mvn deploy --settings settings.xml
+  - kubectl cluster-info  
+  # Following is just to demo that the kubernetes cluster works.
+
+# Wait for kube-dns to be ready.
+#  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
+# deployment on Kubernetes.
+# Make sure created pod is scheduled and running.
+#  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-demo -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
+
 
 notification:
   email: mthakur@mdsol.com

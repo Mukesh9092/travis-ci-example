@@ -1,42 +1,24 @@
-sudo: required
-dist: xenial
-language: java
-jdk:
-  - openjdk8
-
-script: ./mvnw clean install
-services:
-  - docker
-before_install:
-  - docker pull openjdk:8-jdk-alpine
-
-install:
-  - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.7/bin/linux/amd64/kubectl
-  - chmod +x ./kubectl
-  - sudo mv ./kubectl /usr/local/bin/kubectl
-
-script:
-  - mvn test
-  - mvn clean package
-  # Create Docker image for our app and push it to Dockerhub repository
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker images
-  - docker tag travis-demo mukesh9092/travis-demo
-  - mkdir ${HOME}/.kube
-  - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-  - kubectl create secret docker-registry myregistrykey --docker-server=$DOCKER_REGISTRY_SERVER --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL
-  - kubectl create -f deployment.yml 
-  - docker push mukesh9092/travis-demo
-  - mvn deploy --settings settings.xml
-  - kubectl cluster-info  
-  # Following is just to demo that the kubernetes cluster works.
-
-# Wait for kube-dns to be ready.
-#  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
-# deployment on Kubernetes.
-# Make sure created pod is scheduled and running.
-#  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-demo -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
-
-
-notification:
-  email: mthakur@mdsol.com
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://5CC0DF38293D64DD42E4A14026CA5FC7.yl4.us-east-2.eks.amazonaws.com
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01EVXlPVEExTURnME1Gb1hEVE13TURVeU56QTFNRGcwTUZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS2RtClB0VzhlRU5jclRWbnFqRVJON2NvTlRQNHhobmJ1RUgwTmlycFlYMkRaN3RuUE1jS0c5cU45c3dhZUhuc3hOOFEKaE1MaDBkZzdlYkVURWFDcEN5bDYzQmtjU3BCUUZTRExVUVRKM2o2YmVER3prdzVCNEVUY1BsWDd6OW40b0puWAo0K3BFeEludXdOLyt3a3Y5dk5BRzNEZ1ZxYldHWnBmdlB0Q2xackdGdnRLci9maXMvdkNYclBScWZDV1VraXB5CmFnTE03bjBlMGhTWTNGZXZlb1Z5Wkd3bmFzMk9QTmY5dkN5OVZrSzhSWm9teDdrUlJYcFcxTlRNWGtqeGoyZ1YKMzU1UEl6NGN3dnExQnAvaW9XaFg5Z3o1Ui9Xb1hVdjRueG1tWUoyS0MyRmdKdVZwUXY2UlFTNXdyRzRmWWhZTApGWXpoVFlMNnBpRzQ4R0dxazBrQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFDOWt6QUwwSUY4OEtXT3FKM0J1ajNNK0xzVGoKWUxSYThUNE9peCtoT245NEpMenJDMWo4b1orUVJLNVNuWkZpdnRpSG9HTjRTZTd4Qzh4cEhBcU9rMXpFL3pkNApHTjFYc0dQeC9TN3c2ckkwV2RQd0RZZDEzRlBpc2ViZFlvNU81ZEU0UWJkUmloK3VOVVlMWlNpSVRqUEVBaTZpCjhEaVNnSUdsOG9DQ1FqZ3NKTzBDQUQ5SXdLS3N0cmZVSVI5a0Z6K3ByU1d4czI1S0ZYblBnOVR2eExyc0dEUVAKeFFNWkF3NWtGREk1WC9yaGdNRHU3RW1iMUpqc0JDSnFkcTh5QW84cUhZRnV4RndLaGo3TVdORDU4SkszVGRrVgpGd3RsOXFWMXd6N1l3aVhwa21iQTFsTXAzRkY5c0NDRzJLY2JldDA5Rll4YVZ3ZkxOY1pySW1YSUVXcz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: aws
+  name: aws
+current-context: aws
+kind: Config
+preferences: {}
+users:
+- name: aws
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      command: heptio-authenticator-aws
+      args:
+        - "token"
+        - "-i"
+        - "terraform-eks-demo"
