@@ -20,20 +20,20 @@ script:
   - mvn clean package
   # Create Docker image for our app and push it to Dockerhub repository
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build -t "$DOCKER_USERNAME"/travis-demo:latest
+  - docker build -t travis-demo .
   - docker images
   - docker tag travis-demo mukesh9092/travis-demo
+  - docker push mukesh9092/travis-demo
   - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.7/bin/linux/amd64/kubectl
   - chmod +x ./kubectl
   - sudo mv ./kubectl /usr/local/bin/kubectl
   - mkdir ${HOME}/.kube
-  - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+  - cp config  ${HOME}/.kube/
+#  - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
 #  - kubectl create secret docker-registry myregistrykey --docker-server=$DOCKER_REGISTRY_SERVER --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL
   - kubectl apply -f deployment.yml 
-  - docker push mukesh9092/travis-demo
-  - mvn deploy --settings settings.xml
-  - kubectl cluster-info  
-  # Following is just to demo that the kubernetes cluster works.
+#  - mvn deploy --settings settings.xml
+   # Following is just to demo that the kubernetes cluster works.
 
 # Wait for kube-dns to be ready.
 #  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
