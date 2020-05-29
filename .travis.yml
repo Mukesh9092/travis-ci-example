@@ -31,7 +31,9 @@ script:
 #  - cp config  ${HOME}/.kube/
   - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
 #  - kubectl create secret docker-registry myregistrykey --docker-server=$DOCKER_REGISTRY_SERVER --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL
-  - kubectl apply -f deployment.yml 
+  - kubectl apply -f deployment.yml
+  - kubectl get all
+#  - mvn deploy --settings settings.xml
 #  - mvn deploy --settings settings.xml
    # Following is just to demo that the kubernetes cluster works.
 
